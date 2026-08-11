@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三角洲-哈夫币换算工具</title>
+    <style>
+        /* 全局基础样式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f4f6f9;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* 容器布局 */
+        .app-card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 480px;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        /* 大标题 */
+        .app-title {
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #1a1a1a;
+        }
+
+        /* 表单组 */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #4a5568;
+        }
+
+        .form-input {
+            width: 100%;
+            height: 44px;
+            padding: 0 12px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            border-color: #3182ce;
+        }
+
+        /* 开始换算按钮 */
+        .btn-calc {
+            width: 100%;
+            height: 46px;
+            background-color: #3182ce;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 8px;
+            margin-bottom: 20px;
+            transition: background-color 0.2s;
+        }
+
+        .btn-calc:hover {
+            background-color: #2b6cb0;
+        }
+
+        /* 结果展示区 */
+        .result-box {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            font-size: 14px;
+        }
+
+        .result-item:not(:last-child) {
+            border-bottom: 1px dashed #e2e8f0;
+        }
+
+        .result-label {
+            color: #718096;
+        }
+
+        .result-value {
+            font-weight: bold;
+            color: #2d3748;
+        }
+
+        .result-value.highlight {
+            color: #e53e3e;
+            font-size: 16px;
+        }
+
+        /* 分割横线 */
+        .divider {
+            height: 1px;
+            background-color: #e2e8f0;
+            margin: 20px 0;
+        }
+
+        /* 单位对照表 */
+        .section-title {
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: #2d3748;
+        }
+
+        .ref-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .ref-table tr {
+            border-bottom: 1px solid #edf2f7;
+        }
+
+        .ref-table tr:last-child {
+            border-bottom: none;
+        }
+
+        .ref-table td {
+            padding: 10px 0;
+            font-size: 14px;
+        }
+
+        .unit-tag {
+            color: #dd6b20;
+            font-weight: bold;
+            width: 30%;
+        }
+
+        .unit-desc {
+            color: #4a5568;
+            text-align: right;
+            width: 70%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-card">
+    <h1 class="app-title">三角洲‑哈夫币换算工具</h1>
+
+    <div class="form-group">
+        <label class="form-label" for="rateInput">1 = 多少万哈夫币</label>
+        <input type="number" id="rateInput" class="form-input" placeholder="例：38" step="any">
+    </div>
+
+    <div class="form-group">
+        <label class="form-label" for="hafInput">输入哈夫币数值 (支持纯数字 / k / m / b)</label>
+        <input type="text" id="hafInput" class="form-input" placeholder="例如20000k、35.2M、1.2B">
+    </div>
+
+    <button class="btn-calc" onclick="calculate()">开始换算</button>
+
+    <div class="result-box">
+        <div class="result-item">
+            <span class="result-label">游戏单位</span>
+            <span class="result-value" id="resGameUnit">--</span>
+        </div>
+        <div class="result-item">
+            <span class="result-label">哈夫币总量</span>
+            <span class="result-value" id="resTotalHaf">--</span>
+        </div>
+        <div class="result-item">
+            <span class="result-label">折合人民币</span>
+            <span class="result-value highlight" id="resRmb">--</span>
+        </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section-title">单位换算</div>
+    <table class="ref-table">
+        <tr>
+            <td class="unit-tag">1K</td>
+            <td class="unit-desc">1,000 哈夫币</td>
+        </tr>
+        <tr>
+            <td class="unit-tag">1M</td>
+            <td class="unit-desc">1,000,000 哈夫币</td>
+        </tr>
+        <tr>
+            <td class="unit-tag">1B</td>
+            <td class="unit-desc">100,000,000 哈夫币</td>
+        </tr>
+    </table>
+</div>
+
+<script>
+    function calculate() {
+        const rateVal = parseFloat(document.getElementById('rateInput').value);
+        const hafRaw = document.getElementById('hafInput').value.trim().toLowerCase();
+
+        // 报错拦截机制 1：汇率拦截
+        if (isNaN(rateVal) || rateVal <= 0) {
+            alert("请填写有效汇率！");
+            return;
+        }
+
+        // 报错拦截机制 2：哈夫币输入格式解析
+        if (!hafRaw) {
+            alert("请输入合法的哈夫币数值！");
+            return;
+        }
+
+        let totalHaf = 0;
+        let numPart = 0;
+
+        if (hafRaw.endsWith('k')) {
+            numPart = parseFloat(hafRaw.slice(0, -1));
+            totalHaf = numPart * 1000;
+        } else if (hafRaw.endsWith('m')) {
+            numPart = parseFloat(hafRaw.slice(0, -1));
+            totalHaf = numPart * 1000000;
+        } else if (hafRaw.endsWith('b')) {
+            numPart = parseFloat(hafRaw.slice(0, -1));
+            totalHaf = numPart * 100000000;
+        } else {
+            totalHaf = parseFloat(hafRaw);
+        }
+
+        if (isNaN(totalHaf) || totalHaf <= 0) {
+            alert("请输入合法的哈夫币数值（须大于0）！");
+            return;
+        }
+
+        // 步骤4：游戏展示单位判定（硬性规则）
+        let gameUnitStr = "";
+        const kVal = totalHaf / 1000;
+
+        if (kVal <= 99999) {
+            // ≤99999K 强制输出XXK，绝不转为M
+            gameUnitStr = (Number.isInteger(kVal) ? kVal : kVal.toFixed(2)) + "K";
+        } else {
+            const mVal = totalHaf / 1000000;
+            if (mVal <= 999) {
+                gameUnitStr = (Number.isInteger(mVal) ? mVal : mVal.toFixed(2)) + "M";
+            } else {
+                const bVal = totalHaf / 100000000;
+                gameUnitStr = (Number.isInteger(bVal) ? bVal : bVal.toFixed(2)) + "B";
+            }
+        }
+
+        // 步骤5：中文大数格式化哈夫币总量
+        let cnTotalStr = "";
+        if (totalHaf >= 100000000) {
+            const yiVal = totalHaf / 100000000;
+            cnTotalStr = (Number.isInteger(yiVal) ? yiVal : yiVal.toFixed(2)) + " 亿哈夫币";
+        } else if (totalHaf >= 10000) {
+            const wanVal = totalHaf / 10000;
+            cnTotalStr = (Number.isInteger(wanVal) ? wanVal : wanVal.toFixed(2)) + " 万哈夫币";
+        } else {
+            cnTotalStr = totalHaf + " 哈夫币";
+        }
+
+        // 步骤6：人民币价格计算公式（永久保留两位小数）
+        const rmbPrice = totalHaf / (rateVal * 10000);
+        const rmbStr = "￥" + rmbPrice.toFixed(2);
+
+        // 步骤7：渲染输出结果
+        document.getElementById('resGameUnit').innerText = gameUnitStr;
+        document.getElementById('resTotalHaf').innerText = cnTotalStr;
+        document.getElementById('resRmb').innerText = rmbStr;
+    }
+</script>
+
+</body>
+</html>
