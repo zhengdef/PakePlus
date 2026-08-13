@@ -2,303 +2,1312 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>三角洲-哈夫币换算工具</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='60' fill='%233b82c4'/%3E%3Ctext x='256' y='340' font-size='280' text-anchor='middle' fill='white' font-family='Arial'%3E₿%3C/text%3E%3C/svg%3E">
+    <title>三角洲 · 哈夫币换算</title>
     <style>
-        /* 全局基础样式 */
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+        }
+
+        html,
+        body {
+            height: 100%;
+            overflow: hidden;
         }
 
         body {
-            background-color: #f4f6f9;
-            color: #333;
             display: flex;
-            justify-content: center;
             align-items: center;
-            min-height: 100vh;
+            justify-content: center;
             padding: 20px;
+            background: #d5dce6;
+            transition: background 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+            min-height: 100vh;
+            min-height: 100dvh;
         }
 
-        /* 容器布局 */
-        .app-card {
-            background: #ffffff;
+        body.dark {
+            background: #000000;
+        }
+
+        /* ===== 视差光斑 ===== */
+        .spotlight-container {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .spotlight {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.35;
+            transition: transform 0.12s ease-out;
+            will-change: transform;
+            pointer-events: none;
+        }
+
+        .spotlight-1 {
+            width: 420px;
+            height: 420px;
+            background: radial-gradient(circle, rgba(80, 160, 255, 0.18) 0%, transparent 70%);
+            top: -80px;
+            left: -80px;
+        }
+        .spotlight-2 {
+            width: 360px;
+            height: 360px;
+            background: radial-gradient(circle, rgba(180, 120, 255, 0.14) 0%, transparent 70%);
+            bottom: -60px;
+            right: -60px;
+        }
+        .spotlight-3 {
+            width: 280px;
+            height: 280px;
+            background: radial-gradient(circle, rgba(60, 200, 240, 0.08) 0%, transparent 70%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        body.dark .spotlight-1 {
+            background: radial-gradient(circle, rgba(60, 140, 255, 0.22) 0%, transparent 70%);
+            opacity: 0.50;
+        }
+        body.dark .spotlight-2 {
+            background: radial-gradient(circle, rgba(160, 100, 255, 0.18) 0%, transparent 70%);
+            opacity: 0.40;
+        }
+        body.dark .spotlight-3 {
+            background: radial-gradient(circle, rgba(40, 180, 220, 0.10) 0%, transparent 70%);
+            opacity: 0.30;
+        }
+
+        /* ===== 主卡片 — iOS 27 玻璃 ===== */
+        .glass-card {
             width: 100%;
             max-width: 480px;
-            padding: 24px;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            max-height: 100vh;
+            max-height: 100dvh;
+            background: rgba(255, 255, 255, 0.38);
+            backdrop-filter: blur(80px) saturate(200%);
+            -webkit-backdrop-filter: blur(80px) saturate(200%);
+            border-radius: 48px;
+            padding: 32px 28px 28px;
+            box-shadow:
+                0 40px 100px -24px rgba(0, 0, 0, 0.10),
+                0 16px 40px -12px rgba(0, 0, 0, 0.04),
+                inset 0 0.5px 0 rgba(255, 255, 255, 0.8),
+                inset 0 -0.5px 0 rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            transition: background 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                box-shadow 0.7s ease,
+                border-color 0.6s ease;
+            animation: cardRise 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            position: relative;
+            z-index: 2;
+            overflow: visible;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
         }
 
-        /* 大标题 */
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: -20%;
+            left: -5%;
+            width: 110%;
+            height: 55%;
+            background: radial-gradient(ellipse at 25% 15%, rgba(255, 255, 255, 0.35) 0%, transparent 70%);
+            pointer-events: none;
+            opacity: 0.7;
+            border-radius: 48px;
+        }
+
+        .glass-card::after {
+            content: '';
+            position: absolute;
+            bottom: -10%;
+            right: -5%;
+            width: 80%;
+            height: 40%;
+            background: radial-gradient(ellipse at 75% 85%, rgba(120, 180, 255, 0.08) 0%, transparent 70%);
+            pointer-events: none;
+            border-radius: 48px;
+        }
+
+        body.dark .glass-card {
+            background: rgba(28, 28, 34, 0.45);
+            backdrop-filter: blur(90px) saturate(200%);
+            -webkit-backdrop-filter: blur(90px) saturate(200%);
+            border-color: rgba(255, 255, 255, 0.06);
+            box-shadow:
+                0 40px 100px -24px rgba(0, 0, 0, 0.6),
+                0 16px 40px -12px rgba(0, 0, 0, 0.3),
+                inset 0 0.5px 0 rgba(255, 255, 255, 0.06),
+                inset 0 -0.5px 0 rgba(255, 255, 255, 0.02);
+        }
+
+        body.dark .glass-card::before {
+            opacity: 0.06;
+            background: radial-gradient(ellipse at 25% 15%, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
+        }
+
+        body.dark .glass-card::after {
+            background: radial-gradient(ellipse at 75% 85%, rgba(80, 160, 255, 0.05) 0%, transparent 70%);
+        }
+
+        @keyframes cardRise {
+            0% {
+                opacity: 0;
+                transform: translateY(30px) scale(0.96);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* ===== 主题切换 ===== */
+        .theme-toggle {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(200, 212, 235, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.02), inset 0 0.5px 0 rgba(255, 255, 255, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            color: #1c2a3a;
+            font-size: 22px;
+            z-index: 5;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(180, 200, 235, 0.25);
+            transform: scale(1.04);
+        }
+        .theme-toggle:active {
+            transform: scale(0.88);
+        }
+
+        body.dark .theme-toggle {
+            background: rgba(80, 90, 110, 0.15);
+            color: #eef2f8;
+            box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.06);
+        }
+        body.dark .theme-toggle:hover {
+            background: rgba(100, 120, 160, 0.15);
+        }
+
+        /* ===== 标题 ===== */
         .app-title {
-            font-size: 20px;
-            font-weight: bold;
-            text-align: center;
-            margin-bottom: 20px;
-            color: #1a1a1a;
+            font-size: 24px;
+            font-weight: 660;
+            letter-spacing: -0.5px;
+            color: #1a293b;
+            margin-bottom: 18px;
+            padding-right: 52px;
+            transition: color 0.6s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .app-title svg {
+            width: 28px;
+            height: 28px;
+            fill: currentColor;
+            opacity: 0.7;
+        }
+        body.dark .app-title {
+            color: #ffffff;
         }
 
-        /* 表单组 */
+        /* ===== 表单 ===== */
         .form-group {
-            margin-bottom: 16px;
+            margin-bottom: 14px;
+            flex-shrink: 0;
         }
-
         .form-label {
             display: block;
             font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 6px;
-            color: #4a5568;
+            font-weight: 500;
+            color: #4b607a;
+            margin-bottom: 5px;
+            letter-spacing: 0.2px;
+            transition: color 0.5s ease;
+        }
+        body.dark .form-label {
+            color: #9a9aa0;
         }
 
         .form-input {
             width: 100%;
-            height: 44px;
-            padding: 0 12px;
-            border: 1px solid #cbd5e0;
-            border-radius: 6px;
-            font-size: 15px;
+            height: 50px;
+            padding: 0 18px;
+            border-radius: 26px;
+            border: 1px solid rgba(180, 200, 225, 0.20);
+            background: rgba(255, 255, 255, 0.22);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            font-size: 16px;
             outline: none;
-            transition: border-color 0.2s;
+            transition: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            color: #0f1a2a;
+            box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.01);
         }
-
         .form-input:focus {
-            border-color: #3182ce;
+            border-color: #4a7fc7;
+            box-shadow: 0 8px 28px -8px rgba(40, 100, 200, 0.14), inset 0 1px 4px rgba(0, 0, 0, 0.01);
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.35);
+        }
+        body.dark .form-input {
+            background: rgba(60, 60, 70, 0.18);
+            border-color: rgba(255, 255, 255, 0.06);
+            color: #ffffff;
+            box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.1);
+        }
+        body.dark .form-input::placeholder {
+            color: #636366;
+        }
+        body.dark .form-input:focus {
+            background: rgba(70, 70, 85, 0.25);
+            border-color: #4a7fc7;
+            box-shadow: 0 8px 28px -8px rgba(40, 100, 200, 0.10);
         }
 
-        /* 开始换算按钮 */
+        /* ===== D方案：动态输入提示 ===== */
+        .input-hint {
+            font-size: 13px;
+            color: #6b809c;
+            margin-top: 5px;
+            padding-left: 4px;
+            min-height: 20px;
+            transition: color 0.3s ease, opacity 0.3s ease;
+            opacity: 0;
+            font-weight: 450;
+            letter-spacing: 0.1px;
+        }
+        .input-hint.visible {
+            opacity: 1;
+        }
+        .input-hint .highlight {
+            color: #4a7fc7;
+            font-weight: 600;
+        }
+        body.dark .input-hint {
+            color: #8e8e93;
+        }
+        body.dark .input-hint .highlight {
+            color: #6aadf0;
+        }
+
+        /* ===== 按钮 ===== */
         .btn-calc {
             width: 100%;
-            height: 46px;
-            background-color: #3182ce;
-            color: #ffffff;
-            font-size: 16px;
-            font-weight: bold;
+            height: 52px;
+            background: linear-gradient(135deg, #4a7fc7 0%, #6c5fa0 100%);
             border: none;
-            border-radius: 6px;
+            border-radius: 30px;
+            font-size: 17px;
+            font-weight: 600;
+            color: white;
             cursor: pointer;
-            margin-top: 8px;
-            margin-bottom: 20px;
-            transition: background-color 0.2s;
+            transition: 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            box-shadow: 0 8px 28px -6px rgba(60, 100, 200, 0.22), inset 0 0.5px 0 rgba(255, 255, 255, 0.15);
+            margin: 4px 0 16px;
+            letter-spacing: 0.4px;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
         }
-
         .btn-calc:hover {
-            background-color: #2b6cb0;
+            transform: scale(0.98);
+            box-shadow: 0 12px 36px -8px rgba(60, 100, 200, 0.28);
+        }
+        .btn-calc:active {
+            transform: scale(0.94);
+        }
+        body.dark .btn-calc {
+            background: linear-gradient(135deg, #4a7fc7 0%, #7a5fa8 100%);
+            box-shadow: 0 8px 28px -6px rgba(40, 80, 180, 0.18);
         }
 
-        /* 结果展示区 */
+        /* ===== 结果卡片 ===== */
         .result-box {
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 12px 16px;
-            margin-bottom: 20px;
+            background: rgba(235, 244, 254, 0.14);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border-radius: 26px;
+            padding: 16px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.20);
+            transition: background 0.6s ease, border-color 0.5s ease;
+            margin-bottom: 16px;
+            box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.3);
+            flex-shrink: 0;
+        }
+        body.dark .result-box {
+            background: rgba(40, 40, 48, 0.14);
+            border-color: rgba(255, 255, 255, 0.04);
+            box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.02);
         }
 
         .result-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px 0;
-            font-size: 14px;
+            padding: 9px 0;
+            font-size: 15px;
+            border-bottom: 1px solid rgba(160, 185, 215, 0.06);
         }
-
-        .result-item:not(:last-child) {
-            border-bottom: 1px dashed #e2e8f0;
+        .result-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
         }
 
         .result-label {
-            color: #718096;
+            color: #5b6f8a;
+            font-weight: 460;
+            font-size: 14px;
+            letter-spacing: 0.2px;
+            flex-shrink: 0;
+        }
+        body.dark .result-label {
+            color: #9a9aa0;
         }
 
         .result-value {
-            font-weight: bold;
-            color: #2d3748;
+            font-weight: 600;
+            color: #1e293b;
+            transition: color 0.5s ease;
+            font-size: 16px;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+            min-width: 80px;
+        }
+        body.dark .result-value {
+            color: #ffffff;
         }
 
         .result-value.highlight {
-            color: #e53e3e;
-            font-size: 16px;
+            color: #3b7ec4;
+            font-size: 20px;
+            font-weight: 660;
+        }
+        body.dark .result-value.highlight {
+            color: #6aadf0;
         }
 
-        /* 分割横线 */
-        .divider {
+        /* ===== 每1000万哈夫币参考行 ===== */
+        .result-divider {
             height: 1px;
-            background-color: #e2e8f0;
-            margin: 20px 0;
+            background: rgba(160, 185, 215, 0.08);
+            margin: 8px 0 8px;
+        }
+        body.dark .result-divider {
+            background: rgba(255, 255, 255, 0.03);
         }
 
-        /* 单位对照表 */
-        .section-title {
-            font-size: 15px;
-            font-weight: bold;
-            margin-bottom: 12px;
-            color: #2d3748;
+        .result-ref {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 0 2px;
+            font-size: 13px;
+            color: #6b809c;
+            font-weight: 450;
+            letter-spacing: 0.2px;
         }
-
-        .ref-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .ref-table tr {
-            border-bottom: 1px solid #edf2f7;
-        }
-
-        .ref-table tr:last-child {
-            border-bottom: none;
-        }
-
-        .ref-table td {
-            padding: 10px 0;
+        .result-ref .ref-icon {
             font-size: 14px;
         }
-
-        .unit-tag {
-            color: #dd6b20;
-            font-weight: bold;
-            width: 30%;
+        .result-ref .ref-value {
+            color: #3b7ec4;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        body.dark .result-ref {
+            color: #8e8e93;
+        }
+        body.dark .result-ref .ref-value {
+            color: #6aadf0;
         }
 
-        .unit-desc {
-            color: #4a5568;
-            text-align: right;
-            width: 70%;
+        /* ===== 单位参考 ===== */
+        .divider {
+            height: 1px;
+            background: rgba(160, 185, 215, 0.10);
+            margin: 12px 0 12px;
+            flex-shrink: 0;
+        }
+        body.dark .divider {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .ref-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 0 2px;
+            flex-shrink: 0;
+        }
+        .ref-label {
+            font-size: 15px;
+            font-weight: 500;
+            color: #2d3f57;
+            transition: color 0.5s ease;
+        }
+        body.dark .ref-label {
+            color: #9a9aa0;
+        }
+
+        .ref-items {
+            display: flex;
+            gap: 18px;
+        }
+        .ref-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 15px;
+        }
+        .ref-item .tag {
+            color: #c06d2b;
+            font-weight: 600;
+            font-size: 15px;
+        }
+        body.dark .ref-item .tag {
+            color: #d9904a;
+        }
+        .ref-item .desc {
+            color: #4a5f7a;
+            font-size: 14px;
+            font-weight: 450;
+        }
+        body.dark .ref-item .desc {
+            color: #8e8e93;
+        }
+
+        /* ===== 结果闪效 ===== */
+        .result-flash {
+            animation: flashGlow 0.5s ease;
+        }
+        @keyframes flashGlow {
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(74, 127, 199, 0);
+            }
+            40% {
+                box-shadow: 0 0 0 6px rgba(74, 127, 199, 0.06);
+            }
+        }
+
+        /* ===== Ripple ===== */
+        @keyframes rippleAnim {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 480px) {
+            .glass-card {
+                padding: 22px 16px 20px;
+                border-radius: 38px;
+            }
+            .app-title {
+                font-size: 21px;
+                margin-bottom: 14px;
+                padding-right: 44px;
+            }
+            .app-title svg {
+                width: 24px;
+                height: 24px;
+            }
+            .form-group {
+                margin-bottom: 11px;
+            }
+            .form-label {
+                font-size: 13px;
+            }
+            .form-input {
+                height: 46px;
+                font-size: 15px;
+                padding: 0 16px;
+                border-radius: 24px;
+            }
+            .input-hint {
+                font-size: 12px;
+                min-height: 18px;
+            }
+            .btn-calc {
+                height: 48px;
+                font-size: 16px;
+                margin: 2px 0 14px;
+                border-radius: 28px;
+            }
+            .result-box {
+                padding: 12px 16px;
+                border-radius: 22px;
+                margin-bottom: 12px;
+            }
+            .result-item {
+                padding: 7px 0;
+                font-size: 14px;
+            }
+            .result-label {
+                font-size: 13px;
+            }
+            .result-value {
+                font-size: 15px;
+                min-width: 70px;
+            }
+            .result-value.highlight {
+                font-size: 18px;
+            }
+            .result-ref {
+                font-size: 12px;
+            }
+            .result-ref .ref-value {
+                font-size: 13px;
+            }
+            .result-divider {
+                margin: 6px 0 6px;
+            }
+            .theme-toggle {
+                top: 14px;
+                right: 14px;
+                width: 38px;
+                height: 38px;
+                font-size: 19px;
+            }
+            .divider {
+                margin: 10px 0 10px;
+            }
+            .ref-section {
+                padding: 2px 0;
+            }
+            .ref-label {
+                font-size: 14px;
+            }
+            .ref-items {
+                gap: 14px;
+            }
+            .ref-item {
+                font-size: 14px;
+            }
+            .ref-item .tag {
+                font-size: 14px;
+            }
+            .ref-item .desc {
+                font-size: 13px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .glass-card {
+                padding: 16px 12px 14px;
+                border-radius: 32px;
+            }
+            .app-title {
+                font-size: 18px;
+                margin-bottom: 10px;
+                padding-right: 38px;
+            }
+            .form-input {
+                height: 40px;
+                font-size: 14px;
+                padding: 0 12px;
+            }
+            .btn-calc {
+                height: 42px;
+                font-size: 14px;
+                margin: 0 0 10px;
+            }
+            .result-box {
+                padding: 10px 12px;
+                border-radius: 18px;
+                margin-bottom: 10px;
+            }
+            .result-item {
+                padding: 5px 0;
+                font-size: 12px;
+            }
+            .result-label {
+                font-size: 12px;
+            }
+            .result-value {
+                font-size: 13px;
+                min-width: 60px;
+            }
+            .result-value.highlight {
+                font-size: 15px;
+            }
+            .result-ref {
+                font-size: 11px;
+            }
+            .result-ref .ref-value {
+                font-size: 12px;
+            }
+            .input-hint {
+                font-size: 11px;
+                min-height: 16px;
+            }
+            .ref-item {
+                font-size: 12px;
+            }
+            .ref-item .tag {
+                font-size: 12px;
+            }
+            .ref-item .desc {
+                font-size: 11px;
+            }
+            .ref-items {
+                gap: 10px;
+            }
+        }
+
+        @media (max-height: 700px) {
+            .glass-card {
+                padding: 18px 16px 16px;
+                border-radius: 34px;
+            }
+            .app-title {
+                font-size: 19px;
+                margin-bottom: 10px;
+                padding-right: 40px;
+            }
+            .app-title svg {
+                width: 22px;
+                height: 22px;
+            }
+            .form-group {
+                margin-bottom: 8px;
+            }
+            .form-label {
+                font-size: 12px;
+                margin-bottom: 3px;
+            }
+            .form-input {
+                height: 40px;
+                font-size: 14px;
+                padding: 0 14px;
+                border-radius: 22px;
+            }
+            .btn-calc {
+                height: 42px;
+                font-size: 15px;
+                margin: 0 0 10px;
+            }
+            .result-box {
+                padding: 10px 14px;
+                border-radius: 18px;
+                margin-bottom: 8px;
+            }
+            .result-item {
+                padding: 5px 0;
+                font-size: 13px;
+            }
+            .result-label {
+                font-size: 12px;
+            }
+            .result-value {
+                font-size: 14px;
+                min-width: 60px;
+            }
+            .result-value.highlight {
+                font-size: 16px;
+            }
+            .result-ref {
+                font-size: 11px;
+            }
+            .result-ref .ref-value {
+                font-size: 12px;
+            }
+            .result-divider {
+                margin: 4px 0 4px;
+            }
+            .input-hint {
+                font-size: 11px;
+                min-height: 16px;
+                margin-top: 3px;
+            }
+            .divider {
+                margin: 6px 0 6px;
+            }
+            .ref-section {
+                padding: 0;
+            }
+            .ref-label {
+                font-size: 13px;
+            }
+            .ref-item {
+                font-size: 13px;
+            }
+            .ref-item .tag {
+                font-size: 13px;
+            }
+            .ref-item .desc {
+                font-size: 12px;
+            }
+            .ref-items {
+                gap: 12px;
+            }
+            .theme-toggle {
+                top: 12px;
+                right: 12px;
+                width: 34px;
+                height: 34px;
+                font-size: 17px;
+            }
+        }
+
+        @media (max-height: 620px) {
+            .glass-card {
+                padding: 14px 14px 12px;
+                border-radius: 30px;
+            }
+            .app-title {
+                font-size: 17px;
+                margin-bottom: 8px;
+                padding-right: 36px;
+            }
+            .app-title svg {
+                width: 20px;
+                height: 20px;
+            }
+            .form-group {
+                margin-bottom: 6px;
+            }
+            .form-label {
+                font-size: 11px;
+                margin-bottom: 2px;
+            }
+            .form-input {
+                height: 36px;
+                font-size: 13px;
+                padding: 0 12px;
+                border-radius: 20px;
+            }
+            .btn-calc {
+                height: 38px;
+                font-size: 14px;
+                margin: 0 0 8px;
+                border-radius: 24px;
+            }
+            .result-box {
+                padding: 8px 12px;
+                border-radius: 16px;
+                margin-bottom: 6px;
+            }
+            .result-item {
+                padding: 4px 0;
+                font-size: 12px;
+            }
+            .result-label {
+                font-size: 11px;
+            }
+            .result-value {
+                font-size: 12px;
+                min-width: 50px;
+            }
+            .result-value.highlight {
+                font-size: 14px;
+            }
+            .result-ref {
+                font-size: 10px;
+            }
+            .result-ref .ref-value {
+                font-size: 11px;
+            }
+            .result-divider {
+                margin: 3px 0 3px;
+            }
+            .input-hint {
+                font-size: 10px;
+                min-height: 14px;
+                margin-top: 2px;
+            }
+            .divider {
+                margin: 4px 0 4px;
+            }
+            .ref-label {
+                font-size: 12px;
+            }
+            .ref-item {
+                font-size: 12px;
+            }
+            .ref-item .tag {
+                font-size: 12px;
+            }
+            .ref-item .desc {
+                font-size: 11px;
+            }
+            .ref-items {
+                gap: 10px;
+            }
+            .theme-toggle {
+                top: 10px;
+                right: 10px;
+                width: 30px;
+                height: 30px;
+                font-size: 15px;
+            }
         }
     </style>
 </head>
 <body>
 
-<div class="app-card">
-    <h1 class="app-title">三角洲‑哈夫币换算工具</h1>
-
-    <div class="form-group">
-        <label class="form-label" for="rateInput">1 = 多少万哈夫币</label>
-        <input type="number" id="rateInput" class="form-input" placeholder="例：38" step="any">
+    <!-- 视差光斑 -->
+    <div class="spotlight-container" id="spotlightContainer">
+        <div class="spotlight spotlight-1" id="spot1"></div>
+        <div class="spotlight spotlight-2" id="spot2"></div>
+        <div class="spotlight spotlight-3" id="spot3"></div>
     </div>
 
-    <div class="form-group">
-        <label class="form-label" for="hafInput">输入哈夫币数值 (支持纯数字 / k / m / b)</label>
-        <input type="text" id="hafInput" class="form-input" placeholder="例如20000k、35.2M、1.2B">
+    <!-- 主卡片 -->
+    <div class="glass-card" role="main" aria-label="哈夫币换算工具">
+
+        <button class="theme-toggle" id="themeToggle" aria-label="切换主题" role="switch">
+            <span id="themeIcon">☀️</span>
+        </button>
+
+        <h1 class="app-title">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm1-13h-2v6l5.25 3.15L17 12.23l-4-2.37V7z"/></svg>
+            三角洲 · 哈夫币
+        </h1>
+
+        <div class="form-group">
+            <label class="form-label" for="rateInput">1 = 多少万哈夫币</label>
+            <input type="number" id="rateInput" class="form-input" placeholder="例：38" step="any" value="">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="hafInput">哈夫币数值 (支持 k/m/b / 万/亿)</label>
+            <input type="text" id="hafInput" class="form-input" placeholder="例如 23232k、1.4b、2300万" value="">
+            <div class="input-hint" id="inputHint">→ 输入数值后显示解析预览</div>
+        </div>
+
+        <button class="btn-calc" id="calcBtn">开始换算</button>
+
+        <div class="result-box" id="resultBox">
+            <div class="result-item">
+                <span class="result-label">游戏单位</span>
+                <span class="result-value" id="resGameUnit">--</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">哈夫币总量</span>
+                <span class="result-value" id="resTotalHaf">--</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">折合人民币</span>
+                <span class="result-value highlight" id="resRmb">--</span>
+            </div>
+            <!-- 每1000万哈夫币参考 (默认隐藏，达到1000万才显示) -->
+            <div class="result-divider" id="refDivider" style="display:none;"></div>
+            <div class="result-ref" id="resultRef" style="display:none;">
+                <span class="ref-icon">💡</span>
+                <span>每1000万哈夫币 ≈</span>
+                <span class="ref-value" id="resPer10m">--</span>
+                <span>元</span>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="ref-section">
+            <span class="ref-label">单位参考</span>
+            <div class="ref-items">
+                <span class="ref-item"><span class="tag">1K</span><span class="desc">1,000</span></span>
+                <span class="ref-item"><span class="tag">1M</span><span class="desc">1,000,000</span></span>
+                <span class="ref-item"><span class="tag">1B</span><span class="desc">1,000,000,000</span></span>
+            </div>
+        </div>
     </div>
 
-    <button class="btn-calc" onclick="calculate()">开始换算</button>
+    <script>
+        (function() {
+            "use strict";
 
-    <div class="result-box">
-        <div class="result-item">
-            <span class="result-label">游戏单位</span>
-            <span class="result-value" id="resGameUnit">--</span>
-        </div>
-        <div class="result-item">
-            <span class="result-label">哈夫币总量</span>
-            <span class="result-value" id="resTotalHaf">--</span>
-        </div>
-        <div class="result-item">
-            <span class="result-label">折合人民币</span>
-            <span class="result-value highlight" id="resRmb">--</span>
-        </div>
-    </div>
+            // DOM
+            const rateInput = document.getElementById('rateInput');
+            const hafInput = document.getElementById('hafInput');
+            const calcBtn = document.getElementById('calcBtn');
+            const resGameUnit = document.getElementById('resGameUnit');
+            const resTotalHaf = document.getElementById('resTotalHaf');
+            const resRmb = document.getElementById('resRmb');
+            const resPer10m = document.getElementById('resPer10m');
+            const resultRef = document.getElementById('resultRef');
+            const refDivider = document.getElementById('refDivider');
+            const resultBox = document.getElementById('resultBox');
+            const themeToggle = document.getElementById('themeToggle');
+            const themeIcon = document.getElementById('themeIcon');
+            const inputHint = document.getElementById('inputHint');
+            const spot1 = document.getElementById('spot1');
+            const spot2 = document.getElementById('spot2');
+            const spot3 = document.getElementById('spot3');
 
-    <div class="divider"></div>
+            // ===== 主题 =====
+            let darkMode = false;
 
-    <div class="section-title">单位换算</div>
-    <table class="ref-table">
-        <tr>
-            <td class="unit-tag">1K</td>
-            <td class="unit-desc">1,000 哈夫币</td>
-        </tr>
-        <tr>
-            <td class="unit-tag">1M</td>
-            <td class="unit-desc">1,000,000 哈夫币</td>
-        </tr>
-        <tr>
-            <td class="unit-tag">1B</td>
-            <td class="unit-desc">100,000,000 哈夫币</td>
-        </tr>
-    </table>
-</div>
-
-<script>
-    function calculate() {
-        const rateVal = parseFloat(document.getElementById('rateInput').value);
-        const hafRaw = document.getElementById('hafInput').value.trim().toLowerCase();
-
-        // 报错拦截机制 1：汇率拦截
-        if (isNaN(rateVal) || rateVal <= 0) {
-            alert("请填写有效汇率！");
-            return;
-        }
-
-        // 报错拦截机制 2：哈夫币输入格式解析
-        if (!hafRaw) {
-            alert("请输入合法的哈夫币数值！");
-            return;
-        }
-
-        let totalHaf = 0;
-        let numPart = 0;
-
-        if (hafRaw.endsWith('k')) {
-            numPart = parseFloat(hafRaw.slice(0, -1));
-            totalHaf = numPart * 1000;
-        } else if (hafRaw.endsWith('m')) {
-            numPart = parseFloat(hafRaw.slice(0, -1));
-            totalHaf = numPart * 1000000;
-        } else if (hafRaw.endsWith('b')) {
-            numPart = parseFloat(hafRaw.slice(0, -1));
-            totalHaf = numPart * 100000000;
-        } else {
-            totalHaf = parseFloat(hafRaw);
-        }
-
-        if (isNaN(totalHaf) || totalHaf <= 0) {
-            alert("请输入合法的哈夫币数值（须大于0）！");
-            return;
-        }
-
-        // 步骤4：游戏展示单位判定（硬性规则）
-        let gameUnitStr = "";
-        const kVal = totalHaf / 1000;
-
-        if (kVal <= 99999) {
-            // ≤99999K 强制输出XXK，绝不转为M
-            gameUnitStr = (Number.isInteger(kVal) ? kVal : kVal.toFixed(2)) + "K";
-        } else {
-            const mVal = totalHaf / 1000000;
-            if (mVal <= 999) {
-                gameUnitStr = (Number.isInteger(mVal) ? mVal : mVal.toFixed(2)) + "M";
-            } else {
-                const bVal = totalHaf / 100000000;
-                gameUnitStr = (Number.isInteger(bVal) ? bVal : bVal.toFixed(2)) + "B";
+            function setTheme(dark) {
+                darkMode = dark;
+                document.body.classList.toggle('dark', dark);
+                themeIcon.textContent = dark ? '🌙' : '☀️';
+                themeToggle.setAttribute('aria-checked', dark ? 'true' : 'false');
             }
-        }
+            themeToggle.addEventListener('click', () => setTheme(!darkMode));
+            themeToggle.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setTheme(!darkMode);
+                }
+            });
+            setTheme(false);
 
-        // 步骤5：中文大数格式化哈夫币总量
-        let cnTotalStr = "";
-        if (totalHaf >= 100000000) {
-            const yiVal = totalHaf / 100000000;
-            cnTotalStr = (Number.isInteger(yiVal) ? yiVal : yiVal.toFixed(2)) + " 亿哈夫币";
-        } else if (totalHaf >= 10000) {
-            const wanVal = totalHaf / 10000;
-            cnTotalStr = (Number.isInteger(wanVal) ? wanVal : wanVal.toFixed(2)) + " 万哈夫币";
-        } else {
-            cnTotalStr = totalHaf + " 哈夫币";
-        }
+            // ===== 视差光斑 =====
+            let mouseX = 0,
+                mouseY = 0;
+            let cx1 = 0,
+                cy1 = 0,
+                cx2 = 0,
+                cy2 = 0,
+                cx3 = 0,
+                cy3 = 0;
 
-        // 步骤6：人民币价格计算公式（永久保留两位小数）
-        const rmbPrice = totalHaf / (rateVal * 10000);
-        const rmbStr = "￥" + rmbPrice.toFixed(2);
+            document.addEventListener('mousemove', (e) => {
+                const x = (e.clientX / window.innerWidth - 0.5) * 2;
+                const y = (e.clientY / window.innerHeight - 0.5) * 2;
+                mouseX = x;
+                mouseY = y;
+            });
+            document.addEventListener('touchmove', (e) => {
+                const t = e.touches[0];
+                if (t) {
+                    mouseX = (t.clientX / window.innerWidth - 0.5) * 2;
+                    mouseY = (t.clientY / window.innerHeight - 0.5) * 2;
+                }
+            }, { passive: true });
 
-        // 步骤7：渲染输出结果
-        document.getElementById('resGameUnit').innerText = gameUnitStr;
-        document.getElementById('resTotalHaf').innerText = cnTotalStr;
-        document.getElementById('resRmb').innerText = rmbStr;
-    }
-</script>
+            function animateSpots() {
+                const e = 0.07;
+                cx1 += (mouseX * 60 - cx1) * e;
+                cy1 += (mouseY * 40 - cy1) * e;
+                cx2 += (mouseX * -50 - cx2) * e;
+                cy2 += (mouseY * -30 - cy2) * e;
+                cx3 += (mouseX * 30 - cx3) * e;
+                cy3 += (mouseY * 20 - cy3) * e;
+                spot1.style.transform = `translate(${cx1}px, ${cy1}px)`;
+                spot2.style.transform = `translate(${cx2}px, ${cy2}px)`;
+                spot3.style.transform = `translate(${cx3}px, ${cy3}px)`;
+                requestAnimationFrame(animateSpots);
+            }
+            animateSpots();
+
+            // ===== 工具 =====
+            function formatInt(n) {
+                return Math.floor(n).toLocaleString('en-US');
+            }
+
+            // ===== 增强解析：支持 k/m/b + 万/亿 =====
+            function parseHaf(raw) {
+                let s = raw.replace(/[,\s_]/g, '');
+                if (!s) return NaN;
+
+                let multiplier = 1;
+                let numStr = s;
+
+                if (s.includes('亿')) {
+                    const parts = s.split('亿');
+                    if (parts.length === 2) {
+                        numStr = parts[0];
+                        multiplier = 1e8;
+                        if (parts[1].includes('万')) {
+                            const subParts = parts[1].split('万');
+                            if (subParts.length === 2) {
+                                const subVal = parseFloat(subParts[0]) || 0;
+                                multiplier = 1e8;
+                                const base = parseFloat(numStr) || 0;
+                                return base * 1e8 + subVal * 1e4;
+                            }
+                        }
+                    }
+                } else if (s.includes('万')) {
+                    const parts = s.split('万');
+                    if (parts.length === 2) {
+                        numStr = parts[0];
+                        multiplier = 1e4;
+                    }
+                }
+
+                let numPart = numStr || s;
+                let lower = numPart.toLowerCase();
+                let engMultiplier = 1;
+                let engNumStr = lower;
+
+                if (lower.endsWith('k')) {
+                    engNumStr = lower.slice(0, -1);
+                    engMultiplier = 1e3;
+                } else if (lower.endsWith('m')) {
+                    engNumStr = lower.slice(0, -1);
+                    engMultiplier = 1e6;
+                } else if (lower.endsWith('b')) {
+                    engNumStr = lower.slice(0, -1);
+                    engMultiplier = 1e9;
+                } else {
+                    engNumStr = lower;
+                    engMultiplier = 1;
+                }
+
+                let val = parseFloat(engNumStr);
+                if (isNaN(val) || val < 0) return NaN;
+
+                val = val * multiplier;
+                val = val * engMultiplier;
+                return val;
+            }
+
+            function formatNumberForDisplay(val) {
+                if (isNaN(val)) return '无效数值';
+                if (val >= 1e8) return formatInt(val / 1e8) + '亿';
+                if (val >= 1e4) return formatInt(val / 1e4) + '万';
+                return formatInt(val);
+            }
+
+            // ===== D方案：动态输入提示 =====
+            function updateHint() {
+                const raw = hafInput.value.trim();
+                if (!raw) {
+                    inputHint.textContent = '→ 输入数值后显示解析预览';
+                    inputHint.classList.remove('visible');
+                    return;
+                }
+                const parsed = parseHaf(raw);
+                if (isNaN(parsed) || parsed < 0) {
+                    inputHint.innerHTML = '⚠️ 请输入合法格式 (例如 23232k、1.4b、2300万)';
+                    inputHint.classList.add('visible');
+                    return;
+                }
+                if (parsed === 0) {
+                    inputHint.innerHTML = '→ 解析结果: <span class="highlight">0</span> 哈夫币';
+                    inputHint.classList.add('visible');
+                    return;
+                }
+                const display = formatNumberForDisplay(parsed);
+                inputHint.innerHTML = `→ 解析结果: <span class="highlight">${display}</span> 哈夫币`;
+                inputHint.classList.add('visible');
+            }
+
+            hafInput.addEventListener('input', updateHint);
+            hafInput.addEventListener('blur', updateHint);
+
+            // ===== 平滑数字跳动 =====
+            function smoothAnimate(el, targetValue, suffix, opts = {}) {
+                const {
+                    duration = 900,
+                        isCurrency = false,
+                        isInteger = false,
+                        decimals = 2
+                } = opts;
+
+                if (isNaN(targetValue) || targetValue === undefined) {
+                    el.textContent = suffix || targetValue;
+                    return;
+                }
+
+                const startTime = performance.now();
+                const startVal = 0;
+                const endVal = targetValue;
+
+                function formatVal(val) {
+                    if (isInteger) return Math.floor(val);
+                    if (isCurrency) return val.toFixed(decimals);
+                    if (Number.isInteger(endVal) && endVal < 1000) return Math.round(val);
+                    return val.toFixed(decimals);
+                }
+
+                function tick() {
+                    const elapsed = performance.now() - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const eased = 1 - Math.pow(1 - progress, 3);
+                    const current = startVal + (endVal - startVal) * eased;
+
+                    let display = formatVal(current);
+                    el.textContent = display + suffix;
+
+                    if (progress < 1) {
+                        requestAnimationFrame(tick);
+                    } else {
+                        let finalDisplay = formatVal(endVal);
+                        el.textContent = finalDisplay + suffix;
+                    }
+                }
+
+                if (endVal === 0) {
+                    el.textContent = '0' + suffix;
+                    return;
+                }
+                requestAnimationFrame(tick);
+            }
+
+            // ===== 核心换算 =====
+            function calculate() {
+                const rateVal = parseFloat(rateInput.value);
+                if (isNaN(rateVal) || rateVal <= 0) {
+                    alert('请填写有效的汇率 (大于0)');
+                    return;
+                }
+                const raw = hafInput.value.trim();
+                if (!raw) {
+                    alert('请输入哈夫币数值');
+                    return;
+                }
+                let totalHaf = parseHaf(raw);
+                if (isNaN(totalHaf) || totalHaf < 0) {
+                    alert('请输入合法的哈夫币数值 (例如 23232k、1.4b、2300万)');
+                    return;
+                }
+                if (totalHaf === 0) {
+                    alert('哈夫币数值须大于0');
+                    return;
+                }
+
+                // 游戏单位
+                let gameNum = 0,
+                    gameSuffix = '';
+                const kVal = totalHaf / 1e3;
+                if (kVal <= 99999) {
+                    gameNum = kVal;
+                    gameSuffix = 'K';
+                } else {
+                    const mVal = totalHaf / 1e6;
+                    if (mVal <= 999) {
+                        gameNum = mVal;
+                        gameSuffix = 'M';
+                    } else {
+                        gameNum = totalHaf / 1e9;
+                        gameSuffix = 'B';
+                    }
+                }
+
+                // 总量
+                let totalNum = 0,
+                    totalSuffix = '';
+                if (totalHaf >= 1e8) {
+                    totalNum = Math.floor(totalHaf / 1e8);
+                    totalSuffix = ' 亿哈夫币';
+                } else if (totalHaf >= 1e4) {
+                    totalNum = Math.floor(totalHaf / 1e4);
+                    totalSuffix = ' 万哈夫币';
+                } else {
+                    totalNum = totalHaf;
+                    totalSuffix = ' 哈夫币';
+                }
+
+                // 人民币
+                const rmb = totalHaf / (rateVal * 10000);
+
+                // ===== 每1000万哈夫币参考 =====
+                // 只有 totalHaf >= 10,000,000 时才显示
+                const showRef = totalHaf >= 10000000;
+                const per10m = 10000000 / (rateVal * 10000);
+
+                // 执行动画 (主结果)
+                smoothAnimate(resGameUnit, gameNum, gameSuffix, { duration: 850, decimals: 2 });
+                smoothAnimate(resTotalHaf, totalNum, totalSuffix, { duration: 950, isInteger: true });
+                smoothAnimate(resRmb, rmb, '', { duration: 1000, isCurrency: true, decimals: 2 });
+
+                // 参考值：只有达到1000万才显示并跳动
+                if (showRef) {
+                    resultRef.style.display = 'flex';
+                    refDivider.style.display = 'block';
+                    smoothAnimate(resPer10m, per10m, '', { duration: 800, isCurrency: true, decimals: 2 });
+                } else {
+                    resultRef.style.display = 'none';
+                    refDivider.style.display = 'none';
+                    resPer10m.textContent = '--';
+                }
+
+                // 闪效
+                resultBox.classList.remove('result-flash');
+                void resultBox.offsetWidth;
+                resultBox.classList.add('result-flash');
+                setTimeout(() => resultBox.classList.remove('result-flash'), 500);
+            }
+
+            // ===== 事件 =====
+            calcBtn.addEventListener('click', calculate);
+            hafInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    calculate();
+                }
+            });
+            rateInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    calculate();
+                }
+            });
+
+            // ===== Ripple =====
+            calcBtn.addEventListener('mousedown', function(e) {
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                const ripple = document.createElement('span');
+                ripple.style.cssText = `
+                        position:absolute; border-radius:50%; background:rgba(255,255,255,0.3);
+                        width:${size}px; height:${size}px; left:${x}px; top:${y}px;
+                        transform:scale(0); animation:rippleAnim 0.6s ease-out forwards;
+                        pointer-events:none;
+                    `;
+                this.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            });
+            if (!document.getElementById('rippleStyle')) {
+                const s = document.createElement('style');
+                s.id = 'rippleStyle';
+                s.textContent = '@keyframes rippleAnim{to{transform:scale(4);opacity:0;}}';
+                document.head.appendChild(s);
+            }
+
+            // ===== 初始化：空白状态 =====
+            rateInput.value = '';
+            hafInput.value = '';
+            inputHint.textContent = '→ 输入数值后显示解析预览';
+            inputHint.classList.remove('visible');
+            resGameUnit.textContent = '--';
+            resTotalHaf.textContent = '--';
+            resRmb.textContent = '--';
+            resPer10m.textContent = '--';
+            resultRef.style.display = 'none';
+            refDivider.style.display = 'none';
+        })();
+    </script>
 
 </body>
 </html>
